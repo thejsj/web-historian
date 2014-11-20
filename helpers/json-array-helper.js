@@ -1,6 +1,7 @@
 /*jshint node:true */
 
 var fs = require('fs');
+var _ = require('underscore');
 
 var JSONArrayHelper = function(filename){
   this._data = [];
@@ -17,8 +18,14 @@ JSONArrayHelper.prototype.push = function(dataValue){
   if (typeof dataValue !== 'object') {
     throw new TypeError('Only Objects can be added to JSONArrayHelper');
   }
-  this._data.push(dataValue);
-  this.saveJSON();
+  if(!_.contains(_.pluck(this._data,'url'), dataValue.url)){
+    this._data.push(dataValue);
+    this.saveJSON();
+  }
+};
+
+JSONArrayHelper.prototype.getAllUrls = function () {
+
 };
 
 JSONArrayHelper.prototype.get = function(){
@@ -26,7 +33,7 @@ JSONArrayHelper.prototype.get = function(){
 };
 
 JSONArrayHelper.prototype.saveJSON = function(){
-  fs.writeFile(this._filename, JSON.stringify(this._data).bind(this)).bind(this);
+  fs.writeFile(this._filename, JSON.stringify(this._data));
 };
 
 module.exports = JSONArrayHelper;

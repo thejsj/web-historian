@@ -44,9 +44,9 @@ exports.addUrlToList = function(url){
 };
 
 exports.isURLArchived = function(url){
-  var archivedUrls = sitesData.get().fileter(function (site) {
+  var archivedUrls = _.pluck(sitesData.get().filter(function (site) {
     return site.archived === true;
-  });
+  }), 'url');
   return archivedUrls.indexOf(url) > -1;
 };
 

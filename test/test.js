@@ -25,47 +25,29 @@ beforeEach(function(){
 describe("Node Server Request Listener Function", function() {
 
   it("Should answer GET requests for /", function(done) {
-    request('http://127.0.0.1:8080/', function(error, response, body){
-        expect(res._responseCode).to.equal(200);
-        expect(res._data.toString().match(/<input/)).to.be.ok; // the resulting html should have an input tag
-        done();
-    });
-    var req = new stubs.Request("/", "GET");
-
-    handler.handleRequest(req, res);
-
-    waitForThen(
-      function() { return res._ended; },
-      function(){
+    request('http://127.0.0.1:8080/', function(error, res, body){
+      expect(res.statusCode).to.equal(200);
+      expect(body.match(/<input/)).to.be.ok; // the resulting html should have an input tag
+      done();
     });
   });
 
   it("Should answer GET requests for archived websites", function(done) {
     var fixtureName = "www.google.com";
-    var req = new stubs.Request("/" + fixtureName, "GET");
-
-    handler.handleRequest(req, res);
-
-    waitForThen(
-      function() { return res._ended; },
-      function(){
-        expect(res._responseCode).to.equal(200);
-        expect(res._data.toString().match(/google/)).to.be.ok; // the resulting html should have the text "google"
-        done();
+    request('http://127.0.0.1:8080/' + fixtureName, function(error, res, body){
+      expect(res.statusCode).to.equal(200);
+      expect(body.match(/google/)).to.be.ok; // the resulting html should have an input tag
+      done();
     });
+
   });
 
   it("Should append submitted sites to 'sites.json'", function(done) {
-    var url = "www.example.com";
-    var req = new stubs.Request("/", "POST", {url: url});
-
-    // Reset the test file and process request
-    fs.writeFileSync(archive.paths.list, "");
-    handler.handleRequest(req, res);
-
-    waitForThen(
-      function() { return res._ended; },
-      function(){
+    var requestObject = {
+      url: 'http://127.0.0.1:8080/',
+      body: 'url=www.example.com'
+    };
+    request.post(requestObject, function(error, res, body){
         var fileContents = fs.readFileSync(archive.paths.list, 'utf8');
         expect(res._responseCode).to.equal(302);
         expect(JSON.parse(fileContents)[0]).to.equal(url);
