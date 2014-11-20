@@ -50,10 +50,15 @@ exports.isURLArchived = function(url){
   return archivedUrls.indexOf(url) > -1;
 };
 
-exports.downloadUrls = function(){
-  return _.pluck(sitesData.get().filter(function (site) {
-    return site.archived === false;
-  }), 'url');
+exports.getDownloadUrls = function(callback){
+  sitesData.readFile(function (data) {
+    var urls = _.pluck(data.filter(function (site) {
+      return site.archived === false;
+    }), 'url');
+    if (typeof callback === 'function') {
+      callback(urls);
+    }
+  });
 };
 
 exports.markUrlAsArchived = function (url) {
