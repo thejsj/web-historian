@@ -5,9 +5,10 @@ var fs = require('fs');
 var archive = require("../helpers/archive-helpers");
 var path = require('path');
 var res;
+var request = require('request');
 
 archive.initialize({
-  list : path.join(__dirname, "/testdata/sites.txt")
+  list : path.join(__dirname, "/testdata/sites.json")
 });
 
 // Conditional async testing, akin to Jasmine's waitsFor()
@@ -24,6 +25,11 @@ beforeEach(function(){
 describe("Node Server Request Listener Function", function() {
 
   it("Should answer GET requests for /", function(done) {
+    request('http://127.0.0.1:8080/', function(error, response, body){
+        expect(res._responseCode).to.equal(200);
+        expect(res._data.toString().match(/<input/)).to.be.ok; // the resulting html should have an input tag
+        done();
+    });
     var req = new stubs.Request("/", "GET");
 
     handler.handleRequest(req, res);
@@ -31,9 +37,6 @@ describe("Node Server Request Listener Function", function() {
     waitForThen(
       function() { return res._ended; },
       function(){
-        expect(res._responseCode).to.equal(200);
-        expect(res._data.toString().match(/<input/)).to.be.ok; // the resulting html should have an input tag
-        done();
     });
   });
 
@@ -52,7 +55,7 @@ describe("Node Server Request Listener Function", function() {
     });
   });
 
-  it("Should append submitted sites to 'sites.txt'", function(done) {
+  it("Should append submitted sites to 'sites.json'", function(done) {
     var url = "www.example.com";
     var req = new stubs.Request("/", "POST", {url: url});
 
@@ -65,7 +68,7 @@ describe("Node Server Request Listener Function", function() {
       function(){
         var fileContents = fs.readFileSync(archive.paths.list, 'utf8');
         expect(res._responseCode).to.equal(302);
-        expect(fileContents).to.equal(url + "\n");
+        expect(JSON.parse(fileContents)[0]).to.equal(url);
         done();
     });
   });

@@ -1,9 +1,14 @@
-var http = require("http");
-var handler = require("./request-handler");
+/*jshint node:true */
 
-var port = 8080;
-var ip = "127.0.0.1";
-var server = http.createServer(handler.handleRequest);
-console.log("Listening on http://" + ip + ":" + port);
-server.listen(port, ip);
+var handler = require('./request-handler');
+var express = require('express');
+var app = express();
 
+app
+  .use(express.static(__dirname+'/public'))
+  .use('*', handler.handleRequest);
+  // .use('*',function(req,res){
+  //   res.status(404).send('404 Not Found');
+  // });
+
+app.listen(8080);

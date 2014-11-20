@@ -1,7 +1,8 @@
-var fs = require('fs');
+/*jshint node:true */
+
 var path = require('path');
 var _ = require('underscore');
-
+var JSONArrayHelper = require('./json-array-helper');
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
  * Consider using the `paths` object below to store frequently used file paths. This way,
@@ -12,8 +13,10 @@ var _ = require('underscore');
 exports.paths = {
   'siteAssets' : path.join(__dirname, '../web/public'),
   'archivedSites' : path.join(__dirname, '../archives/sites'),
-  'list' : path.join(__dirname, '../archives/sites.txt')
+  'list' : path.join(__dirname, '../archives/sites.json')
 };
+
+var sitesData = new JSONArrayHelper(exports.paths.list);
 
 // Used for stubbing paths for jasmine tests, do not modify
 exports.initialize = function(pathsObj){
@@ -26,15 +29,25 @@ exports.initialize = function(pathsObj){
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(){
+  return _.pluck(sitesData.get(), 'url');
 };
 
-exports.isUrlInList = function(){
+exports.isUrlInList = function(url){
+  return _.contains(exports.readListOfUrls(), url);
 };
 
-exports.addUrlToList = function(){
+exports.addUrlToList = function(url){
+  sitesData.push({
+    url: url,
+    archived: false
+  });
 };
 
-exports.isURLArchived = function(){
+exports.isURLArchived = function(url){
+  var archivedUrls = sitesData.get().fileter(function (site) {
+    return site.archived === true;
+  });
+  return archivedUrls.indexOf(url) > -1;
 };
 
 exports.downloadUrls = function(){
