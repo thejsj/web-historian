@@ -51,4 +51,11 @@ exports.isURLArchived = function(url){
 };
 
 exports.downloadUrls = function(){
+  return _.pluck(sitesData.get().filter(function (site) {
+    return site.archived === false;
+  }), 'url');
+};
+
+exports.markUrlAsArchived = function (url) {
+  sitesData.markAsArchived(url);
 };

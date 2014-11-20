@@ -4,11 +4,7 @@ var archive = require('../helpers/archive-helpers');
 var path = require('path');
 
 exports.handleGetRequest = function (req, res) {
-  var url = req.baseUrl.slice(1);
-  console.log('URL: ', url);
-  console.log('URL: ', req.url);
-  console.log(archive.isUrlInList(url));
-  console.log(archive.isURLArchived(url));
+  var url = req.url.slice(1);
   if (archive.isUrlInList(url) && archive.isURLArchived(url)) {
     // Find File
     var pathname = path.resolve(__dirname + '/../archives/sites/' + url);
@@ -22,25 +18,35 @@ exports.handleGetRequest = function (req, res) {
 };
 
 exports.handlePostRequest = function (req, res) {
-  console.log('url: ' + req.param('url'));
-  var url = req.param('url');
 
-  if (archive.isUrlInList(url) && archive.isURLArchived(url)) {
-    // Find File
-    var pathname = path.resolve(__dirname + '/../archives/sites/' + url);
-    res
-      .status(200)
-      .type('html')
-      .sendFile(pathname);
-  } else {
-    // Not in the list
-    if (!archive.isUrlInList(url) ) {
-      archive.addUrlToList(url);
+  var url = req.param('url');
+  var body = '';
+
+  req.on('data', function(data){
+    body += data;
+  });
+
+  req.on('end', function(){
+    console.log(body);
+    url = JSON.parse(body).url;
+    if (archive.isUrlInList(url) && archive.isURLArchived(url)) {
+      // Find File
+      var pathname = path.resolve(__dirname + '/../archives/sites/' + url);
+      res
+        .status(200)
+        .type('html')
+        .sendFile(pathname);
+    } else {
+      // Not in the list
+      if (!archive.isUrlInList(url) ) {
+        archive.addUrlToList(url);
+      }
+      res.writeHead(302, {
+        'Location': '/loading.html'
+      });
+      res.end();
     }
-    res.writeHead(302, {
-      'Location': '/loading.html'
-    });
-    res.end();
-  }
+  });
+
 };
 
